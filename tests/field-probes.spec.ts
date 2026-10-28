@@ -11,6 +11,7 @@ test.describe('Phase 1: Field Probes', () => {
   const formUrl = process.env.formUrl;
 
   test.beforeEach(async ({ page }) => {
+    test.skip(!formUrl, 'formUrl is not set; skipping live form probe.');
     // Navigate and wait for the form's main heading element rather than networkidle
     await page.goto(formUrl!);
     await page.getByRole('heading', { level: 1 }).waitFor();

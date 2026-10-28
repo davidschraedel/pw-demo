@@ -90,4 +90,10 @@ npm run test:report
 3. **Robust CSV Parsing**: Uses `csv-parse` to handle multi-line strings, quoted fields, and gviz column nuances.
 4. **Native Polling**: Employs Playwright's `expect.poll()` to wait for the unique submission ID to be written to the sheet by Google servers.
 5. **Timestamp Window Assertion**: Instead of asserting on exact seconds, validates that the server-generated timestamp falls within $\pm 5$ minutes of the local submission start time.
-6. **Soft Assertions**: Uses `expect.soft()` across all 16 columns so any mismatched fields are surfaced together in a single test run.
+## Continuous Integration (GitHub Actions)
+
+The workflow at `.github/workflows/playwright.yml` validates code health on pushes and pull requests to `main`, `master`, and `dev`, as well as manual triggers via `workflow_dispatch`.
+
+- **Remote CI (Code Health & Type Safety)**: Runs `npm run typecheck` (`tsc --noEmit`) to verify that all Page Objects, test specs, and configurations compile cleanly without syntax or type errors. Because target URLs are stored locally in `.env`, live form submission tests are gracefully skipped in CI to ensure no phantom or unauthorized test runs hit external forms from the cloud.
+- **Local Runs (Full Automation Suite)**: With [.env](file:///Users/davidschraedel/Desktop/Files/Projects/code/Playwright/pw-demo/.env) populated, running `npm test` executes the complete 13-test automation suite locally against your target Google Form and Sheets.
+
