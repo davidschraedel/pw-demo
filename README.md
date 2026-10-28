@@ -92,13 +92,8 @@ npm run test:report
 5. **Timestamp Window Assertion**: Instead of asserting on exact seconds, validates that the server-generated timestamp falls within $\pm 5$ minutes of the local submission start time.
 ## Continuous Integration (GitHub Actions)
 
-The workflow at `.github/workflows/playwright.yml` runs tests automatically on pushes and pull requests to `main`, `master`, and `dev`, as well as manual triggers via `workflow_dispatch`.
+The workflow at `.github/workflows/playwright.yml` validates code health on pushes and pull requests to `main`, `master`, and `dev`, as well as manual triggers via `workflow_dispatch`.
 
-Because `.env` is git-ignored, you must configure your URLs as **GitHub Repository Secrets**:
-
-1. Navigate to your GitHub repository: **Settings** > **Secrets and variables** > **Actions**.
-2. Click **New repository secret** and add:
-   - `FORM_URL`: Your Google Form URL (e.g. `https://forms.gle/...`)
-   - `GOOGLE_SHEET_URL`: Your Google Sheets URL (e.g. `https://docs.google.com/spreadsheets/d/.../edit`)
-3. The workflow will automatically inject these into the test run environment and publish the Playwright HTML report as a downloadable artifact.
+- **Remote CI (Code Health & Type Safety)**: Runs `npm run typecheck` (`tsc --noEmit`) to verify that all Page Objects, test specs, and configurations compile cleanly without syntax or type errors. Because target URLs are stored locally in `.env`, live form submission tests are gracefully skipped in CI to ensure no phantom or unauthorized test runs hit external forms from the cloud.
+- **Local Runs (Full Automation Suite)**: With [.env](file:///Users/davidschraedel/Desktop/Files/Projects/code/Playwright/pw-demo/.env) populated, running `npm test` executes the complete 13-test automation suite locally against your target Google Form and Sheets.
 

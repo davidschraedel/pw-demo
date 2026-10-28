@@ -8,14 +8,11 @@ import path from 'path';
  */
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
-// Fail fast if required environment variables are missing
-const requiredEnvVars = ['formUrl', 'googleSheetUrl'];
-for (const key of requiredEnvVars) {
-  if (!process.env[key] || process.env[key]?.trim() === '') {
-    throw new Error(
-      `[Config Error] Missing required environment variable: "${key}". Please define it in your .env file.`
-    );
-  }
+const hasRequiredEnv = Boolean(process.env.formUrl && process.env.googleSheetUrl);
+if (!hasRequiredEnv) {
+  console.warn(
+    '\x1b[33m[Notice] "formUrl" or "googleSheetUrl" is not set. Live endpoint tests will be skipped.\x1b[0m'
+  );
 }
 
 /**

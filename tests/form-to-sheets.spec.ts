@@ -16,8 +16,7 @@ test.describe('End-to-End Google Form to Sheets Automation', () => {
   const sheetUrl = process.env.googleSheetUrl;
 
   test.beforeEach(() => {
-    expect(formUrl, 'formUrl must be defined in .env').toBeTruthy();
-    expect(sheetUrl, 'googleSheetUrl must be defined in .env').toBeTruthy();
+    test.skip(!formUrl || !sheetUrl, 'formUrl or googleSheetUrl not set; skipping live E2E test.');
   });
 
   test('submits full form and verifies recorded responses in Google Sheets', async ({ page, request }) => {
