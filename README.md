@@ -90,4 +90,15 @@ npm run test:report
 3. **Robust CSV Parsing**: Uses `csv-parse` to handle multi-line strings, quoted fields, and gviz column nuances.
 4. **Native Polling**: Employs Playwright's `expect.poll()` to wait for the unique submission ID to be written to the sheet by Google servers.
 5. **Timestamp Window Assertion**: Instead of asserting on exact seconds, validates that the server-generated timestamp falls within $\pm 5$ minutes of the local submission start time.
-6. **Soft Assertions**: Uses `expect.soft()` across all 16 columns so any mismatched fields are surfaced together in a single test run.
+## Continuous Integration (GitHub Actions)
+
+The workflow at `.github/workflows/playwright.yml` runs tests automatically on pushes and pull requests to `main`, `master`, and `dev`, as well as manual triggers via `workflow_dispatch`.
+
+Because `.env` is git-ignored, you must configure your URLs as **GitHub Repository Secrets**:
+
+1. Navigate to your GitHub repository: **Settings** > **Secrets and variables** > **Actions**.
+2. Click **New repository secret** and add:
+   - `FORM_URL`: Your Google Form URL (e.g. `https://forms.gle/...`)
+   - `GOOGLE_SHEET_URL`: Your Google Sheets URL (e.g. `https://docs.google.com/spreadsheets/d/.../edit`)
+3. The workflow will automatically inject these into the test run environment and publish the Playwright HTML report as a downloadable artifact.
+
