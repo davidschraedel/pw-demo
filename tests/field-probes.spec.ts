@@ -11,8 +11,9 @@ test.describe('Phase 1: Field Probes', () => {
   const formUrl = process.env.formUrl;
 
   test.beforeEach(async ({ page }) => {
-    expect(formUrl, 'formUrl must be defined in .env').toBeTruthy();
-    await page.goto(formUrl!, { waitUntil: 'domcontentloaded' });
+    // Navigate and wait for the form's main heading element rather than networkidle
+    await page.goto(formUrl!);
+    await page.getByRole('heading', { level: 1 }).waitFor();
   });
 
   test('probe: short text input', async ({ page }) => {
@@ -66,7 +67,10 @@ test.describe('Phase 1: Field Probes', () => {
       // Click to open the custom dropdown menu
       await dropdown.click();
 
-      // Wait for the option to animate into view, then click the text span directly
+      // Note on dropdown locator:
+      // Google Forms renders a material ripple effect overlay (.kRoyt.MbhUzd) directly above
+      // each option div. Clicking the inner <span> target bypasses the ripple interceptor
+      // and triggers the custom selection listener without timing out on animations.
       const option = question.getByRole('option', { name: 'Advanced' });
       await option.waitFor({ state: 'visible' });
       await option.locator('span').click();
@@ -152,7 +156,7 @@ test.describe('Phase 1: Field Probes', () => {
       const desktopFirefox = question.locator('[role="checkbox"][aria-label="Firefox, response for Desktop"]');
       const mobileSafari = question.locator('[role="checkbox"][aria-label="Safari, response for Mobile"]');
 
-      // Click each checkbox directly to toggle aria-checked
+      // Click the checkboxes directly without force: true to ensure genuine actionability
       await desktopChrome.click();
       await desktopFirefox.click();
       await mobileSafari.click();

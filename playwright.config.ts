@@ -8,6 +8,16 @@ import path from 'path';
  */
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
+// Fail fast if required environment variables are missing
+const requiredEnvVars = ['formUrl', 'googleSheetUrl'];
+for (const key of requiredEnvVars) {
+  if (!process.env[key] || process.env[key]?.trim() === '') {
+    throw new Error(
+      `[Config Error] Missing required environment variable: "${key}". Please define it in your .env file.`
+    );
+  }
+}
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */

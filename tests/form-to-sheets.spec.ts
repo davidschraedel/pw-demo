@@ -2,6 +2,15 @@ import { test, expect } from '@playwright/test';
 import { GoogleFormPage, FormPayload } from '../pages/GoogleFormPage';
 import { GoogleSheetsClient } from '../pages/GoogleSheetsClient';
 
+/**
+ * Normalizes time strings (e.g., "09", "30", "AM" -> "9:30:00 AM")
+ * matching Google Sheets server-side time rendering.
+ */
+function formatExpectedSheetTime(hour: string, minute: string, ampm = 'AM'): string {
+  const parsedHour = parseInt(hour, 10);
+  return `${parsedHour}:${minute}:00 ${ampm}`;
+}
+
 test.describe('End-to-End Google Form to Sheets Automation', () => {
   const formUrl = process.env.formUrl;
   const sheetUrl = process.env.googleSheetUrl;
@@ -32,9 +41,6 @@ test.describe('End-to-End Google Form to Sheets Automation', () => {
       browserMobile: ['Safari'],
       browserTablet: ['Edge'],
     };
-
-    const expectedSheetDate = '11/15/2026';
-    const expectedSheetTime = '9:30:00 AM';
 
     const formPage = new GoogleFormPage(page);
     const sheetsClient = new GoogleSheetsClient(request, sheetUrl!);
@@ -74,8 +80,20 @@ test.describe('End-to-End Google Form to Sheets Automation', () => {
       }
 
       expect.soft(matchedRow['Select your experience level with automation.']).toBe(payload.experienceLevel);
-      expect.soft(matchedRow['Select the target test execution date.']).toBe(expectedSheetDate);
-      expect.soft(matchedRow['Select the preferred execution time.']).toBe(expectedSheetTime);
+
+      // Compare dates using parsed Date representations to normalize locale differences (MM/DD/YYYY vs YYYY-MM-DD)
+      const sheetDateStr = matchedRow['Select the target test execution date.'];
+      const parsedSheetDate = new Date(sheetDateStr);
+      const parsedPayloadDate = new Date(payload.targetDate.replace(/-/g, '/'));
+      expect.soft(
+        parsedSheetDate.toDateString(),
+        `Date "${sheetDateStr}" matches expected payload date "${payload.targetDate}"`
+      ).toBe(parsedPayloadDate.toDateString());
+
+      // Normalize expected time format
+      const expectedTimeStr = formatExpectedSheetTime(payload.timeHour, payload.timeMinute, payload.timeAmPm);
+      expect.soft(matchedRow['Select the preferred execution time.']).toBe(expectedTimeStr);
+
       expect.soft(matchedRow['Rate the ease of form automation from 1 to 5.']).toBe(payload.easeRating);
       expect.soft(matchedRow['Rate the overall stability of your test suite.']).toBe(payload.stabilityRating);
 

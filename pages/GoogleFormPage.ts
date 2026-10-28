@@ -27,7 +27,8 @@ export class GoogleFormPage {
    * Navigates to the Google Form URL.
    */
   public async goto(formUrl: string): Promise<void> {
-    await this.page.goto(formUrl, { waitUntil: 'domcontentloaded' });
+    await this.page.goto(formUrl);
+    await this.page.getByRole('heading', { level: 1 }).waitFor();
   }
 
   /**
