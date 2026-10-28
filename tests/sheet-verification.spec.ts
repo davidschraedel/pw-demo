@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { fetchSheetRows } from './helpers/sheets';
+import { GoogleSheetsClient } from '../pages/GoogleSheetsClient';
 
 test.describe('Phase 2: Standalone Sheet Verification', () => {
   const googleSheetUrl = process.env.googleSheetUrl;
@@ -9,7 +9,8 @@ test.describe('Phase 2: Standalone Sheet Verification', () => {
   });
 
   test('fetch and parse sheet headers with cache busting', async ({ request }) => {
-    const { headers, rows } = await fetchSheetRows(request, googleSheetUrl!);
+    const sheetsClient = new GoogleSheetsClient(request, googleSheetUrl!);
+    const { headers, rows } = await sheetsClient.fetchRows();
 
     console.log('\n--- Parsed Google Sheet Headers ---');
     headers.forEach((h, idx) => console.log(`  [${idx}] ${h}`));
@@ -31,9 +32,11 @@ test.describe('Phase 2: Standalone Sheet Verification', () => {
   });
 
   test('demonstrate polling helper against sheet responses', async ({ request }) => {
+    const sheetsClient = new GoogleSheetsClient(request, googleSheetUrl!);
+
     // Poll the sheet to confirm the response fetching and polling mechanism runs reliably
     await expect.poll(async () => {
-      const { rows } = await fetchSheetRows(request, googleSheetUrl!);
+      const { rows } = await sheetsClient.fetchRows();
       return Array.isArray(rows);
     }, {
       message: 'Expected sheet fetch to return an array of rows',
@@ -41,11 +44,8 @@ test.describe('Phase 2: Standalone Sheet Verification', () => {
       intervals: [1_000, 2_000],
     }).toBe(true);
 
-    const { rows } = await fetchSheetRows(request, googleSheetUrl!);
-    if (rows.length > 0) {
-      console.log(`Verified: Sheet contains ${rows.length} existing row(s). Most recent entry by: "${rows[rows.length - 1]['What is your full name?']}"`);
-    } else {
-      console.log('Notice: Sheet currently has 0 submitted rows. Ready for Phase 3 E2E test or manual submission.');
-    }
+    const { rows } = await sheetsClient.fetchRows();
+    expect(rows.length).toBeGreaterThan(0);
+    console.log(`Verified: Sheet contains ${rows.length} existing row(s). Most recent entry by: "${rows[rows.length - 1]['What is your full name?']}"`);
   });
 });
